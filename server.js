@@ -2,6 +2,10 @@ import express from "express";
 import cors from "cors";
 import pool from "./db.js";
 import path from "path";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // ==== EXPRESS ====
 const app = express();
@@ -16,9 +20,66 @@ app.get("/", (req, res) => {
   res.sendFile(path.resolve("public/index.html"));
 });
 
-// Ruta para iniciar sesión (frontend)
+// Ruta frontend iniciar sesión
 app.get("/iniciarsesion", (req, res) => {
-  res.sendFile(path.resolve("public/iniciarsesion/index.html"));
+  res.sendFile(path.resolve("public/iniciarsesion/iniciosesion.html"));
+});
+
+// Ruta frontend registro
+app.get("/registrarse", (req, res) => {
+  res.sendFile(path.resolve("public/registrarse/registro.html"));
+});
+
+// ============================
+//  NODEMAILER (correo real)
+// ============================
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // TU CORREO
+    pass: process.env.EMAIL_PASS  // TU APP PASSWORD
+  }
+});
+
+// ============================
+//  ENVIAR CÓDIGO POR CORREO
+// ============================
+app.post("/api/enviar-codigo", async (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo)
+    return res.json({ error: "Falta el correo electrónico" });
+
+  // (Opcional) Validar correo institucional
+  if (!correo.endsWith("@cetis68.edu.mx")) {
+    return res.json({ error: "Usa tu correo institucional @cetis68.edu.mx" });
+  }
+
+  // Código 6 dígitos
+  const codigo = Math.floor(100000 + Math.random() * 900000);
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: correo,
+      subject: "Código de verificación - Atiende Tu Escuela",
+      html: `
+      <h2>Verificación de cuenta</h2>
+      <p>Tu código de verificación es:</p>
+      <h1 style="color:#bb2323;">${codigo}</h1>
+      <p>Ingresa este código en la página para completar tu registro.</p>
+      `
+    });
+
+    res.json({
+      mensaje: "Código enviado correctamente.",
+      codigo // lo mandamos al frontend porque solo ahí validarás
+    });
+
+  } catch (err) {
+    console.error("ERROR enviando correo:", err);
+    res.json({ error: "No se pudo enviar el correo." });
+  }
 });
 
 // ============================
@@ -78,6 +139,9 @@ app.get("/test", async (req, res) => {
   }
 });
 
+// ============================
+// SERVIDOR
+// ============================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor ejecutándose en el puerto " + PORT);
