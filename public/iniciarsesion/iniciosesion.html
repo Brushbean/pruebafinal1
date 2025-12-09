@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+    <header class="barra-superior">
+        <h1>Atiendemiescuela - CETis 68</h1>
+    </header>
+
+    <main class="contenedor-principal">
+
+        <div class="panel">
+            <h2>Iniciar Sesión</h2>
+
+            <form id="formLogin">
+
+                <label>Correo electrónico</label>
+                <input type="email" id="correo" required>
+
+                <label>Contraseña</label>
+                <input type="password" id="contraseña" required>
+
+                <button class="boton boton-iniciar">Entrar</button>
+            </form>
+
+            <p><a href="index.html">⟵ Regresar</a></p>
+
+            <p id="mensaje"></p>
+        </div>
+
+    </main>
+
+    <script>
+        document.getElementById("formLogin").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const datos = {
+                correo: correo.value,
+                contraseña: contraseña.value
+            };
+
+            const respuesta = await fetch("/api/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(datos)
+            });
+
+            const info = await respuesta.json();
+            mensaje.textContent = info.mensaje;
+        });
+    </script>
+
+</body>
+</html>

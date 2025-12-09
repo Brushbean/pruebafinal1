@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrarse</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+    <header class="barra-superior">
+        <h1>Atiendemiescuela - CETis 68</h1>
+    </header>
+
+    <main class="contenedor-principal">
+
+        <div class="panel">
+            <h2>Crear Cuenta</h2>
+
+            <form id="formRegistro">
+
+                <label>Nombre completo</label>
+                <input type="text" id="nombre" required>
+
+                <label>Correo electrónico</label>
+                <input type="email" id="correo" required>
+
+                <label>Contraseña</label>
+                <input type="password" id="contraseña" required>
+
+                <button class="boton boton-registrarse">Registrarse</button>
+            </form>
+
+            <p><a href="index.html">⟵ Regresar</a></p>
+
+            <p id="mensaje"></p>
+        </div>
+
+    </main>
+
+    <script>
+        document.getElementById("formRegistro").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const datos = {
+                nombre: nombre.value,
+                correo: correo.value,
+                contraseña: contraseña.value
+            };
+
+            const r = await fetch("/api/registro", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos)
+            });
+
+            const info = await r.json();
+            mensaje.textContent = info.mensaje;
+        });
+    </script>
+
+</body>
+</html>
