@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Registrarse</title>
-    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="/public/estilos.css">
 </head>
 <body>
 
     <header class="barra-superior">
-        <h1>Atiendemiescuela - CETis 68</h1>
+        <h1>Atiende Tu Escuela - CETis 68</h1>
     </header>
 
     <main class="contenedor-principal">
@@ -24,6 +24,12 @@
                 <label>Correo electrónico</label>
                 <input type="email" id="correo" required>
 
+                <!-- Botón para enviar código -->
+                <button id="btnCodigo" type="button" class="boton">Enviar código de verificación</button>
+
+                <label>Código enviado a tu correo</label>
+                <input type="number" id="codigo" placeholder="123456" required>
+
                 <label>Contraseña</label>
                 <input type="password" id="contraseña" required>
 
@@ -38,8 +44,46 @@
     </main>
 
     <script>
+        let codigoGenerado = null;
+
+        // ------------------------
+        // ENVIAR CÓDIGO AL CORREO
+        // ------------------------
+        document.getElementById("btnCodigo").addEventListener("click", async () => {
+            const correoValor = correo.value.trim();
+
+            if (!correoValor) {
+                mensaje.textContent = "Escribe un correo primero.";
+                return;
+            }
+
+            const r = await fetch("/api/enviar-codigo", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ correo: correoValor })
+            });
+
+            const info = await r.json();
+            mensaje.textContent = info.mensaje;
+
+            if (info.codigo) {
+                // Guardamos el código solo para esta DEMO
+                codigoGenerado = info.codigo;
+            }
+        });
+
+
+        // ------------------------
+        // REGISTRO CON VERIFICACIÓN
+        // ------------------------
         document.getElementById("formRegistro").addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            // Validar código antes de registrar
+            if (codigo.value != codigoGenerado) {
+                mensaje.textContent = "Código incorrecto. Verifica tu correo.";
+                return;
+            }
 
             const datos = {
                 nombre: nombre.value,
